@@ -1,4 +1,4 @@
-use hidapi::{HidApi, HidDevice, HidError, DeviceInfo};
+use hidapi::{HidApi, HidDevice, HidError};
 use thiserror::Error;
 use crate::usb::Error::DeviceNotFound;
 
@@ -27,7 +27,7 @@ impl Usb {
         let hid_api = HidApi::new()?;
         let device_info = hid_api.device_list().find(|info| info.product_string() == Some(PRODUCT_STRING));
 
-        return match device_info {
+        match device_info {
             None => {
                 Err(DeviceNotFound)
             },
