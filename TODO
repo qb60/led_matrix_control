@@ -1,0 +1,5 @@
+- display static image from BMP file;
+- display looped image sequence from folder;
+- frame time interval as CLI argument;
+- input file/folder as CLI argument;
+- display orientation as CLI argument;
