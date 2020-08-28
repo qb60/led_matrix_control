@@ -1,22 +1,7 @@
+use crate::screen_buffer;
+use crate::screen_buffer::ScreenBuffer;
 use hidapi::{HidApi, HidDevice, HidError};
 use thiserror::Error;
-
-const SCREEN_SIZE: usize = 24;
-const PACKET_SIZE: usize = SCREEN_SIZE / 8 * SCREEN_SIZE;
-
-type ScreenBufferBytes = [u8; PACKET_SIZE];
-
-pub struct ScreenBuffer {
-    bytes: ScreenBufferBytes,
-}
-
-impl ScreenBuffer {
-    pub fn new(bytes: &ScreenBufferBytes) -> Self {
-        Self {
-            bytes: bytes.clone(),
-        }
-    }
-}
 
 pub struct Usb {
     device: HidDevice,
@@ -31,6 +16,7 @@ pub enum Error {
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
+const PACKET_SIZE: usize = screen_buffer::SCREEN_BUFFER_SIZE;
 
 impl Usb {
     pub fn try_connect() -> Result<Self> {

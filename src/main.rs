@@ -1,7 +1,9 @@
 mod image_processor;
+mod screen_buffer;
 mod usb;
 
-use crate::usb::{ScreenBuffer, Usb};
+use crate::screen_buffer::ScreenBuffer;
+use crate::usb::Usb;
 
 const BITMAP_SIZE_BYTES: usize = 72;
 type RawBitmap = [u8; BITMAP_SIZE_BYTES];
