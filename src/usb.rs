@@ -1,12 +1,25 @@
 use hidapi::{HidApi, HidDevice, HidError};
 use thiserror::Error;
-use crate::usb::Error::DeviceNotFound;
 
 const SCREEN_SIZE: usize = 24;
-const PACKET_SIZE: usize = SCREEN_SIZE/8*SCREEN_SIZE;
+const PACKET_SIZE: usize = SCREEN_SIZE / 8 * SCREEN_SIZE;
+
+type ScreenBufferBytes = [u8; PACKET_SIZE];
+
+pub struct ScreenBuffer {
+    bytes: ScreenBufferBytes,
+}
+
+impl ScreenBuffer {
+    pub fn new(bytes: &ScreenBufferBytes) -> Self {
+        Self {
+            bytes: bytes.clone(),
+        }
+    }
+}
 
 pub struct Usb {
-    device: HidDevice
+    device: HidDevice,
 }
 
 #[derive(Error, Debug)]
@@ -19,28 +32,27 @@ pub enum Error {
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-
 impl Usb {
     pub fn try_connect() -> Result<Self> {
         const PRODUCT_STRING: &str = "USB LED MATRIX";
 
         let hid_api = HidApi::new()?;
-        let device_info = hid_api.device_list().find(|info| info.product_string() == Some(PRODUCT_STRING));
+        let device_info = hid_api
+            .device_list()
+            .find(|info| info.product_string() == Some(PRODUCT_STRING));
 
         match device_info {
-            None => {
-                Err(DeviceNotFound)
-            },
+            None => Err(Error::DeviceNotFound),
             Some(device_info) => {
                 let device = device_info.open_device(&hid_api)?;
                 Ok(Self { device })
-            },
+            }
         }
     }
 
-    pub fn send_bytes(self, bytes: &[u8; PACKET_SIZE]) -> Result<()>{
-        let mut packet: [u8; PACKET_SIZE+1] = [0; PACKET_SIZE+1];
-        packet[1..].copy_from_slice(bytes);
+    pub fn send_bytes(self, buffer: &ScreenBuffer) -> Result<()> {
+        let mut packet: [u8; PACKET_SIZE + 1] = [0; PACKET_SIZE + 1];
+        packet[1..].copy_from_slice(&buffer.bytes);
         self.device.send_feature_report(&packet)?;
         Ok(())
     }
